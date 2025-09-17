@@ -4,10 +4,14 @@ import cors from "cors";
 import multer from "multer";
 import path from "path";
 import "dotenv/config";
-import fs from "fs"; // file system module for deleting files
+import fs from "fs";
 import profileRouter from "./routes/profilehandler.js";
 import authRoutes from "./routes/auth.js";
-// import theme from "./routes/theme.js";
+import Post from "./models/PostModel.js";
+import theme from "./routes/theme.js";
+
+import friendRoutes from "./routes/friends.js";
+import postRoutes from "./routes/posts.js";
 
 const app = express();
 
@@ -35,25 +39,6 @@ mongoose.connect("mongodb://localhost:27017/postflow").then(() => {
   console.log("✅ DB connected!");
 });
 
-// Schemas
-const commentSchema = new mongoose.Schema({
-  userId: String,
-  text: String,
-  createdAt: { type: Date, default: Date.now },
-});
-
-const postSchema = new mongoose.Schema({
-  caption: { type: String, required: false },
-  mediaUrl: { type: String, default: null },
-  mediaType: { type: String, enum: ["photo", "video"], default: null },
-  likes: { type: Number, default: 0 },
-  likedBy: [String],
-  comments: [commentSchema],
-  createdAt: { type: Date, default: Date.now },
-});
-
-const Post = mongoose.model("Post", postSchema);
-
 // Upload route
 app.post("/api/upload", upload.single("media"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
@@ -64,11 +49,19 @@ app.post("/api/upload", upload.single("media"), (req, res) => {
 // Create new post
 app.post("/dashboard", async (req, res) => {
   try {
-    const { caption, mediaUrl, mediaType } = req.body;
-    if ((!caption || !caption.trim()) && !mediaUrl) {
-      return res.status(400).json({ error: "Caption or media required" });
+    const { caption, mediaType, userId, imageUrl } = req.body;
+
+    if ((!caption || !caption.trim()) && !imageUrl) {
+      return res.status(400).json({ error: "Caption or image required" });
     }
-    const post = await Post.create({ caption, mediaUrl, mediaType });
+
+    const post = await Post.create({
+      caption,
+      imageUrl,
+      mediaType,
+      userId,
+    });
+
     res.json(post);
   } catch (error) {
     console.error(error);
@@ -79,9 +72,22 @@ app.post("/dashboard", async (req, res) => {
 // Get all posts
 app.get("/dashboard", async (req, res) => {
   try {
+    const { filter } = req.query;
+
+    if (filter && typeof filter === "string" && filter.trim().length > 0) {
+      const regex = new RegExp(filter.trim(), "i"); // case-insensitive regex
+
+      const posts = await Post.find({
+        $or: [{ caption: regex }, { fullName: regex }],
+      }).sort({ createdAt: -1 });
+
+      return res.status(200).json(posts);
+    }
+
     const posts = await Post.find().sort({ createdAt: -1 });
     res.json(posts);
   } catch (error) {
+    console.error("Error fetching posts:", error);
     res.status(500).json({ error: "Failed to fetch posts" });
   }
 });
@@ -109,7 +115,7 @@ app.put("/dashboard/:id", async (req, res) => {
   }
 });
 
-// Delete post — **media file पनि delete गरिन्छ**
+// Delete post
 app.delete("/dashboard/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -135,25 +141,38 @@ app.delete("/dashboard/:id", async (req, res) => {
 });
 
 // Like/Unlike post
-app.put("/dashboard/like/:id", async (req, res) => {
+app.post("/dashboard/like/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({ error: "Invalid post ID" });
+    if (!mongoose.Types.ObjectId.isValid(userId))
+      return res.status(400).json({ error: "Invalid user ID" });
+
     const post = await Post.findById(id);
     if (!post) return res.status(404).json({ error: "Post not found" });
 
-    const alreadyLiked = post.likedBy.includes(userId);
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const alreadyLiked = post.likedBy.some(
+      (id) => id.toString() === userObjectId.toString()
+    );
+
     if (alreadyLiked) {
-      post.likes -= 1;
-      post.likedBy = post.likedBy.filter((u) => u !== userId);
+      post.likes = Math.max(post.likes - 1, 0);
+      post.likedBy = post.likedBy.filter(
+        (id) => id.toString() !== userObjectId.toString()
+      );
     } else {
       post.likes += 1;
-      post.likedBy.push(userId);
+      post.likedBy.push(userObjectId);
     }
 
     await post.save();
     res.json(post);
   } catch (error) {
+    console.error("Like/unlike error:", error);
     res.status(500).json({ error: "Failed to like/unlike post" });
   }
 });
@@ -225,12 +244,17 @@ app.delete("/dashboard/comment/:postId/:commentId", async (req, res) => {
   }
 });
 
-//profile
+// Other Routers
+app.use("/api/users", authRoutes);
+// Profile
 app.use("/profilehandler", profileRouter);
-// //theme
-// app.use("/theme",themeRouter);
-app.use("/api", authRoutes);
+// Theme
+app.use("/theme", theme);
+// Friendlist
+app.use("/api/friends", friendRoutes);
+app.use("/api/friends", postRoutes);
 
-app.listen(8000, () => {
-  console.log("Server running on port 8000");
+const PORT = 8000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
