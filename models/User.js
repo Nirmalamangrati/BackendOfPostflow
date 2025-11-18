@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     profileImage: { type: String, default: null },
+    likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
     // Notification tracking
     notificationLastSeen: { type: Date, default: Date.now },
     // Friend system
@@ -17,6 +19,14 @@ const userSchema = new mongoose.Schema(
     friendRequestsReceived: [
       { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     ],
+    //theme
+    caption: String,
+    frame: String,
+    mediaUrl: String,
+    mediaType: String,
+    likes: { type: Number, default: 0 },
+    comments: { type: Array, default: [] },
+    createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

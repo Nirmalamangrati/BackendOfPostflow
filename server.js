@@ -8,11 +8,10 @@ import fs from "fs";
 import profileRouter from "./routes/profilehandler.js";
 import authRoutes from "./routes/auth.js";
 import Post from "./models/PostModel.js";
-import theme from "./routes/theme.js";
-
 import friendRoutes from "./routes/friends.js";
 import postRoutes from "./routes/posts.js";
-
+import http from "http";
+import { Server } from "socket.io";
 const app = express();
 
 app.use(cors());
@@ -36,7 +35,42 @@ const upload = multer({ storage });
 
 // MongoDB connection
 mongoose.connect("mongodb://localhost:27017/postflow").then(() => {
-  console.log("✅ DB connected!");
+  console.log("DB connected!");
+});
+
+// 1. Create HTTP Server and Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" },
+  methods: ["GET", "POST"],
+});
+// Define  routes
+app.get("/", (req, res) => {
+  res.send("Hello world from Express!");
+});
+
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+
+  // NOTE: Remove ": string" type hint as this is plain JavaScript/Node.js
+  socket.on("joinRoom", (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined room`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
+});
+
+// Endpoint to trigger a notification
+app.post("/notify", (req, res) => {
+  const { userId, message } = req.body;
+  const timestamp = new Date();
+
+  // Send notification to the user's room
+  io.to(userId).emit("newNotification", { message, timestamp });
+  res.json({ success: true });
 });
 
 // Upload route
@@ -78,7 +112,7 @@ app.get("/dashboard", async (req, res) => {
       const regex = new RegExp(filter.trim(), "i"); // case-insensitive regex
 
       const posts = await Post.find({
-        $or: [{ caption: regex }, { fullName: regex }],
+        $or: [{ caption: regex }],
       }).sort({ createdAt: -1 });
 
       return res.status(200).json(posts);
@@ -122,7 +156,7 @@ app.delete("/dashboard/:id", async (req, res) => {
     const post = await Post.findById(id);
     if (!post) return res.status(404).json({ error: "Post not found" });
 
-    // media file delete गर्ने part
+    // media file delete garne part
     if (post.mediaUrl) {
       const filename = post.mediaUrl.split("/uploads/")[1];
       if (filename) {
@@ -243,18 +277,51 @@ app.delete("/dashboard/comment/:postId/:commentId", async (req, res) => {
     res.status(500).json({ error: "Failed to delete comment" });
   }
 });
+//Theme
+
+app.get("/theme", (req, res) => {
+  res.json(theme);
+});
+
+app.post("/theme-upload", (req, res) => {
+  const uploadSingle = upload.single("image");
+  uploadSingle(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ error: "Multer error: " + err.message });
+    } else if (err) {
+      return res
+        .status(500)
+        .json({ error: "Unknown upload error: " + err.message });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const { caption, frame } = req.body;
+    const fileUrl = `http://localhost:8000/uploads/${req.file.filename}`;
+
+    // Normal response on success
+    res.json({
+      message: "File uploaded successfully",
+      fileUrl,
+      caption,
+      frame,
+    });
+  });
+});
 
 // Other Routers
 app.use("/api/users", authRoutes);
 // Profile
 app.use("/profilehandler", profileRouter);
-// Theme
-app.use("/theme", theme);
-// Friendlist
+//theme
+app.use("/posts", postRoutes);
+// Friendlist & Posts (Note: You have /dashboard routes defined above which may overlap)
 app.use("/api/friends", friendRoutes);
 app.use("/api/friends", postRoutes);
 
 const PORT = 8000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+server.listen(PORT, () => {
+  console.log(` Server and Socket.IO running on port ${PORT}`);
 });

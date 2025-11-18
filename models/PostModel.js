@@ -28,6 +28,8 @@ const postSchema = new mongoose.Schema({
   likes: { type: Number, default: 0 },
   likedByUsers: { type: [String], default: [] },
   comments: [commentSchema],
+
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
 // Avoid OverwriteModelError

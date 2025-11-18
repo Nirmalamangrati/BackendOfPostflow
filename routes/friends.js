@@ -87,7 +87,7 @@ router.get("/list", verifyToken, async (req, res) => {
 });
 
 // Remove Friend
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/remove/:id", verifyToken, async (req, res) => {
   try {
     const friendId = req.params.id;
     const userId = req.user.id;
