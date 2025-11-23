@@ -12,6 +12,8 @@ import friendRoutes from "./routes/friends.js";
 import postRoutes from "./routes/posts.js";
 import http from "http";
 import { Server } from "socket.io";
+import { ThemeModel } from "./models/ThemeModel.js";
+
 const app = express();
 
 app.use(cors());
@@ -279,8 +281,14 @@ app.delete("/dashboard/comment/:postId/:commentId", async (req, res) => {
 });
 //Theme
 
-app.get("/theme", (req, res) => {
-  res.json(theme);
+app.get("/theme", async (req, res) => {
+  try {
+    const themes = await ThemeModel.find();
+    res.json(themes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error fetching themes" });
+  }
 });
 
 app.post("/theme-upload", (req, res) => {
@@ -298,15 +306,14 @@ app.post("/theme-upload", (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const { caption, frame } = req.body;
+    const { caption, frame, image } = req.body;
     const fileUrl = `http://localhost:8000/uploads/${req.file.filename}`;
-
-    // Normal response on success
     res.json({
       message: "File uploaded successfully",
-      fileUrl,
+      url: fileUrl,
       caption,
       frame,
+      image,
     });
   });
 });
@@ -320,6 +327,7 @@ app.use("/posts", postRoutes);
 // Friendlist & Posts (Note: You have /dashboard routes defined above which may overlap)
 app.use("/api/friends", friendRoutes);
 app.use("/api/friends", postRoutes);
+app.use("/api", friendRoutes);
 
 const PORT = 8000;
 server.listen(PORT, () => {

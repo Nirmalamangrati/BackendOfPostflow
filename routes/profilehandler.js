@@ -64,9 +64,9 @@ router.get("/my-post", verifyToken, async (req, res) => {
   }
 });
 // GET posts of logged-in user
-router.get("profilehandler/my-post", verifyToken, async (req, res) => {
+router.get("/profilehandler/my-post", verifyToken, async (req, res) => {
   try {
-    const posts = await Post.find({ createdBy: req.user.id }).sort({
+    const posts = await Post.find({ userId: req.user.id }).sort({
       createdAt: -1,
     });
     res.json(posts);
