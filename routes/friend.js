@@ -27,17 +27,5 @@ router.post("/add", async (req, res) => {
   }
 });
 
-// Get Friend List
-router.get("/:userId", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId).populate(
-      "friends",
-      "fullName email profileImage"
-    );
-    res.status(200).json(user.friends);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 export default router;

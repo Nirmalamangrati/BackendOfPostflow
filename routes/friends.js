@@ -18,6 +18,30 @@ router.get("/all", verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+//dashboard friend request
+// Get Friend Requests Received
+router.get("/get-friend-requests", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate(
+      "friendRequestsReceived",
+      " fullname"
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const friendRequests = user.friendRequestsReceived.map((u) => ({
+      _id: user._id,
+      name: user.fullname,
+    }));
+
+    console.log("Friend requests received:", friendRequests);
+    res.json(friendRequests);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Send Friend Request
 router.post("/request/:id", verifyToken, async (req, res) => {
@@ -129,16 +153,14 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
   }
 });
 // Remove a suggested user from "People You May Know"
-router.delete("/remove/:userId", verifyToken, async (req, res) => {
-  const { userId } = req.params; // user to remove
+router.delete("/removes/:userId", verifyToken, async (req, res) => {
+  const { userId } = req.params;
   const currentUserId = req.userId;
 
   try {
     const user = await User.findById(currentUserId);
     if (!user)
       return res.status(404).json({ message: "Current user not found" });
-
-    // Check if user exists in suggestions
     if (!user.suggestions.includes(userId)) {
       return res.status(400).json({ message: "User not in suggestions" });
     }
