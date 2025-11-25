@@ -9,6 +9,7 @@ const commentSchema = new mongoose.Schema({
 
 // Main Post schema
 const postSchema = new mongoose.Schema({
+  fullname: { type: String, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   caption: { type: String, required: true },
   fullName: String,

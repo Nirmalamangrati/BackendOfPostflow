@@ -18,30 +18,6 @@ router.get("/all", verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-//dashboard friend request
-// Get Friend Requests Received
-router.get("/get-friend-requests", verifyToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).populate(
-      "friendRequestsReceived",
-      " fullname"
-    );
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    const friendRequests = user.friendRequestsReceived.map((u) => ({
-      _id: user._id,
-      name: user.fullname,
-    }));
-
-    console.log("Friend requests received:", friendRequests);
-    res.json(friendRequests);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // Send Friend Request
 router.post("/request/:id", verifyToken, async (req, res) => {
@@ -75,6 +51,31 @@ router.post("/request/:id", verifyToken, async (req, res) => {
     return res.status(200).json({ msg: "Friend request sent" });
   } catch (err) {
     return res.status(500).json({ error: err.message });
+  }
+});
+//dashboard friend request
+// Get Friend Requests Received
+router.get("/get-friend-requests", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate(
+      "friendRequestsReceived",
+      "fullname  profileImage"
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const friendRequests = user.friendRequestsReceived.map((friend) => ({
+      _id: friend._id,
+      name: friend.fullname,
+      profile: friend.profileImage,
+    }));
+
+    console.log("Friend requests received:", friendRequests);
+    res.json(friendRequests);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -153,7 +154,7 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
   }
 });
 // Remove a suggested user from "People You May Know"
-router.delete("/removes/:userId", verifyToken, async (req, res) => {
+router.delete("/removes/:id", verifyToken, async (req, res) => {
   const { userId } = req.params;
   const currentUserId = req.userId;
 

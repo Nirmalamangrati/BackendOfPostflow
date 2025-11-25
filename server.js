@@ -346,7 +346,7 @@ app.use("/api/users", authRoutes);
 app.use("/profilehandler", profileRouter);
 //theme
 app.use("/posts", postRoutes);
-// Friendlist & Posts (Note: You have /dashboard routes defined above which may overlap)
+
 app.use("/api/friends", friendRoutes);
 app.use("/api/friends", postRoutes);
 app.use("/api", friendRoutes);
