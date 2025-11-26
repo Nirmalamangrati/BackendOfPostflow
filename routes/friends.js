@@ -58,10 +58,9 @@ router.post("/request/:id", verifyToken, async (req, res) => {
 router.get("/get-friend-requests", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
-      "friendRequestsReceived",
-      "fullname  profileImage"
+      "friendRequestsReceived"
     );
-
+    console.log("user", user);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -87,14 +86,14 @@ router.post("/accept/:id", verifyToken, async (req, res) => {
     const user = await User.findById(userId);
     const requester = await User.findById(requesterId);
 
-    if (!user.friendRequests.includes(requesterId)) {
+    if (!user.friendRequestsReceived.includes(requesterId)) {
       return res.status(400).json({ msg: "No friend request from this user" });
     }
 
     user.friends.push(requesterId);
     requester.friends.push(userId);
 
-    user.friendRequests = user.friendRequests.filter(
+    user.friendRequestsReceived = user.friendRequestsReceived.filter(
       (id) => id.toString() !== requesterId
     );
     await user.save();
@@ -122,37 +121,36 @@ router.get("/list", verifyToken, async (req, res) => {
 // Remove Friend
 router.delete("/remove/:id", verifyToken, async (req, res) => {
   try {
-    const friendId = req.params.id;
+    const requesterId = req.params.id;
     const userId = req.user.id;
 
-    if (friendId === userId)
-      return res.status(400).json({ msg: "You cannot remove yourself" });
-
     const user = await User.findById(userId);
-    const friend = await User.findById(friendId);
+    const requester = await User.findById(requesterId);
 
-    if (!user || !friend)
-      return res.status(404).json({ msg: "User not found" });
+    if (!user.friendRequestsReceived.includes(requesterId)) {
+      return res.status(400).json({ msg: "No friend request from this user" });
+    }
+    user.friends.push(requesterId);
+    requester.friends.push(userId);
 
-    // Check if they are actually friends
-    const isFriendUser = user.friends.some((id) => id.equals(friendId));
-    const isFriendOther = friend.friends.some((id) => id.equals(userId));
-
-    if (!isFriendUser || !isFriendOther)
-      return res.status(400).json({ msg: "You are not friends" });
-
-    // Remove each other from friends list
-    user.friends = user.friends.filter((id) => !id.equals(friendId));
-    friend.friends = friend.friends.filter((id) => !id.equals(userId));
+    user.friendRequestsReceived = user.friendRequestsReceived.filter(
+      (id) => id.toString() !== requesterId
+    );
+    if (requester.friendRequestsSent) {
+      requester.friendRequestsSent = requester.friendRequestsSent.filter(
+        (id) => id.toString() !== userId
+      );
+    }
 
     await user.save();
-    await friend.save();
+    await requester.save();
 
-    return res.status(200).json({ msg: "Friend removed successfully" });
+    res.json({ msg: "Friend request accepted and removed" });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
+
 // Remove a suggested user from "People You May Know"
 router.delete("/removes/:id", verifyToken, async (req, res) => {
   const { userId } = req.params;
