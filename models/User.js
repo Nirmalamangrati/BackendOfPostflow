@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema(
     profileImage: { type: String, default: null },
     likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 
+    name: { type: String, required: true },
+
     // Notification tracking
     notificationLastSeen: { type: Date, default: Date.now },
     // Friend system
