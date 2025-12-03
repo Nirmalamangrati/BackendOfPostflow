@@ -13,6 +13,7 @@ import postRoutes from "./routes/posts.js";
 import http from "http";
 import { Server } from "socket.io";
 import { ThemeModel } from "./models/ThemeModel.js";
+import { verifyToken } from "./middleware/verifyAuth.js";
 
 const app = express();
 
@@ -53,8 +54,6 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
-
-  // NOTE: Remove ": string" type hint as this is plain JavaScript/Node.js
   socket.on("joinRoom", (userId) => {
     socket.join(userId);
     console.log(`User ${userId} joined room`);
@@ -177,39 +176,40 @@ app.delete("/dashboard/:id", async (req, res) => {
 });
 
 // Like/Unlike post
-app.post("/dashboard/like/:id", async (req, res) => {
+app.post("/dashboard/:postId/like", verifyToken, async (req, res) => {
   try {
-    const { id } = req.params;
-    const { userId } = req.body;
+    const { postId } = req.params;
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    if (!mongoose.Types.ObjectId.isValid(id))
-      return res.status(400).json({ error: "Invalid post ID" });
-    if (!mongoose.Types.ObjectId.isValid(userId))
-      return res.status(400).json({ error: "Invalid user ID" });
+    if (!mongoose.Types.ObjectId.isValid(postId))
+      return res.status(400).json({ message: "Invalid post ID" });
 
-    const post = await Post.findById(id);
-    if (!post) return res.status(404).json({ error: "Post not found" });
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
-    const userObjectId = new mongoose.Types.ObjectId(userId);
-    const alreadyLiked = post.likedBy.some(
-      (id) => id.toString() === userObjectId.toString()
-    );
+    post.likedByUsers = post.likedByUsers || [];
+    post.likes = post.likes || 0;
 
-    if (alreadyLiked) {
-      post.likes = Math.max(post.likes - 1, 0);
-      post.likedBy = post.likedBy.filter(
-        (id) => id.toString() !== userObjectId.toString()
-      );
-    } else {
+    const likedIndex = post.likedByUsers.indexOf(userId);
+    if (likedIndex === -1) {
       post.likes += 1;
-      post.likedBy.push(userObjectId);
+      post.likedByUsers.push(userId);
+    } else {
+      post.likes = Math.max(post.likes - 1, 0);
+      post.likedByUsers.splice(likedIndex, 1);
     }
 
     await post.save();
-    res.json(post);
+
+    res.json({
+      success: true,
+      likes: post.likes,
+      likedByUser: likedIndex === -1,
+    });
   } catch (error) {
-    console.error("Like/unlike error:", error);
-    res.status(500).json({ error: "Failed to like/unlike post" });
+    console.error("Error toggling like:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -291,9 +291,10 @@ app.get("/theme", async (req, res) => {
   }
 });
 
-app.post("/theme-upload", (req, res) => {
+app.post("/theme-upload", verifyToken, (req, res) => {
   const uploadSingle = upload.single("image");
-  uploadSingle(req, res, (err) => {
+  const userId = req.user.id;
+  uploadSingle(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       return res.status(400).json({ error: "Multer error: " + err.message });
     } else if (err) {
@@ -307,7 +308,15 @@ app.post("/theme-upload", (req, res) => {
     }
 
     const { caption, frame, image } = req.body;
+
     const fileUrl = `http://localhost:8000/uploads/${req.file.filename}`;
+    const post = await Post.create({
+      caption,
+      imageUrl: fileUrl,
+      mediaType: "photo",
+      userId,
+    });
+
     res.json({
       message: "File uploaded successfully",
       url: fileUrl,
@@ -317,28 +326,6 @@ app.post("/theme-upload", (req, res) => {
     });
   });
 });
-
-// LIKE / UNLIKE
-export const likePost = async (req, res) => {
-  try {
-    const postId = req.params.id;
-    const userId = req.userId;
-
-    const post = await Post.findById(postId);
-    if (!post) return res.status(404).json({ message: "Post not found" });
-    if (post.likes.includes(userId)) {
-      post.likes = post.likes.filter((id) => id.toString() !== userId);
-    } else {
-      post.likes.push(userId);
-    }
-
-    const updatedPost = await post.save();
-    res.json(updatedPost);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
 
 // Other Routers
 app.use("/api/users", authRoutes);

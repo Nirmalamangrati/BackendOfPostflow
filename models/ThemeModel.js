@@ -19,7 +19,7 @@ const themeSchema = new mongoose.Schema({
   caption: { type: String, default: "" },
   media: { type: String, default: "" },
 
-  // ❤️ LIKE SYSTEM (single & correct)
+  //  LIKE SYSTEM (single & correct)
   likes: [
     {
       type: mongoose.Schema.Types.ObjectId,

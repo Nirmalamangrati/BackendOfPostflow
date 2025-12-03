@@ -110,13 +110,22 @@ router.get("/list", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
       "friends",
-      "name email"
+      "name email profilePic"
     );
-    res.json(user.friends);
+
+    const friendsWithFullName = user.friends.map(f => ({
+      _id: f._id,
+      email: f.email,
+      profilePic: f.profilePic || "/default.jpg",
+      fullName: f.name || f.email, 
+    }));
+
+    res.json(friendsWithFullName);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Remove Friend
 router.delete("/remove/:id", verifyToken, async (req, res) => {
