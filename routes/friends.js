@@ -105,28 +105,6 @@ router.post("/accept/:id", verifyToken, async (req, res) => {
   }
 });
 
-// Get Friend List
-router.get("/list", verifyToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).populate(
-      "friends",
-      "name email profilePic"
-    );
-
-    const friendsWithFullName = user.friends.map(f => ({
-      _id: f._id,
-      email: f.email,
-      profilePic: f.profilePic || "/default.jpg",
-      fullName: f.name || f.email, 
-    }));
-
-    res.json(friendsWithFullName);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
 // Remove Friend
 router.delete("/remove/:id", verifyToken, async (req, res) => {
   try {
@@ -156,6 +134,50 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
 
     res.json({ msg: "Friend request accepted and removed" });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get Friend List
+router.get("/list", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate(
+      "friends",
+      "name email profilePic"
+    );
+
+    const friendsWithFullName = user.friends.map((f) => ({
+      _id: f._id,
+      email: f.email,
+      profilePic: f.profilePic || "/default.jpg",
+      fullName: f.name || f.email,
+    }));
+
+    res.json(friendsWithFullName);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//remove friend
+// DELETE /remove-friends/:id
+router.delete("/remove-friends/:friendId", async (req, res) => {
+  try {
+    const { friendId } = req.params;
+    const { userId } = req.body; // make sure frontend sends this
+
+    // 1️⃣ Pull friendId from user's friends array
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { friends: friendId } }, // removes friendId from array
+      { new: true } // returns the updated document
+    );
+
+    if (!updatedUser) return res.status(404).json({ error: "User not found" });
+
+    res.status(200).json({ message: "Friend removed", user: updatedUser });
+  } catch (err) {
+    console.error("Remove friend error:", err);
     res.status(500).json({ error: err.message });
   }
 });

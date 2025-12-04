@@ -20,7 +20,7 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-// --- Register 
+// --- Register
 router.post("/register", async (req, res) => {
   try {
     const { fullname, dob, phone, email, password } = req.body;
@@ -116,31 +116,39 @@ router.post("/login", async (req, res) => {
 
 // --- New ChangePassword API ---
 router.put("/change-password", verifyToken, async (req, res) => {
-  const userId = req.user.id; // comes from decoded token
-  const { currentPassword, newPassword } = req.body;
-
-  if (!currentPassword || !newPassword) {
-    return res.status(400).json({ message: "All fields are required." });
-  }
-
   try {
-    const user = await User.findById(userId);
+    console.log("REQ.USER:", req.user);
+    console.log("REQ.BODY:", req.body);
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found." });
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Incorrect current password." });
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect current password." });
+    }
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
 
-    await user.save();
+    // ✅ ✅ ✅ MAIN FIX HERE
+    await user.save({ validateBeforeSave: false });
 
-    res.json({ message: "Password updated successfully." });
+    return res.json({ message: "Password updated successfully." });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error." });
+    console.error("CRASH IN CHANGE PASSWORD:", err);
+    return res.status(500).json({ message: "Server error." });
   }
 });
-
 
 export default router;

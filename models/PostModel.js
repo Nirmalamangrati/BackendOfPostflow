@@ -23,6 +23,7 @@ const postSchema = new mongoose.Schema({
   likedByUsers: { type: [String], default: [] },
   comments: [commentSchema],
   suggestions: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  profilePic: { type: String },
 });
 
 // Avoid OverwriteModelError
