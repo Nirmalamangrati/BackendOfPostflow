@@ -143,34 +143,37 @@ router.get("/list", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
       "friends",
-      "name email profilePic"
+      "fullname profileImage"
     );
 
     const friendsWithFullName = user.friends.map((f) => ({
       _id: f._id,
       email: f.email,
-      profilePic: f.profilePic || "/default.jpg",
-      fullName: f.name || f.email,
+      fullName: f.fullname,
+      profilePic: f.profileImage
+        ? `${req.protocol}://${req.get("host")}/uploads/profile/${
+            f.profileImage
+          }`
+        : null,
     }));
 
     res.json(friendsWithFullName);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
 //remove friend
-// DELETE /remove-friends/:id
 router.delete("/remove-friends/:friendId", async (req, res) => {
   try {
     const { friendId } = req.params;
-    const { userId } = req.body; // make sure frontend sends this
+    const { userId } = req.body;
 
-    // 1️⃣ Pull friendId from user's friends array
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $pull: { friends: friendId } }, // removes friendId from array
-      { new: true } // returns the updated document
+      { $pull: { friends: friendId } },
+      { new: true }
     );
 
     if (!updatedUser) return res.status(404).json({ error: "User not found" });

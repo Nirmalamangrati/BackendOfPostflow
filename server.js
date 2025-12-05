@@ -20,7 +20,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use("/uploads/profile", express.static("uploads/profile"));
 app.use("/uploads", express.static("uploads"));
 
 // Multer setup
@@ -311,12 +311,13 @@ app.post("/theme-upload", verifyToken, (req, res) => {
 
     const fileUrl = `http://localhost:8000/uploads/${req.file.filename}`;
     const post = await Post.create({
-      caption,
-      imageUrl: fileUrl,
-      mediaType: "photo",
-      userId,
+      user: req.user.id,
+      text: req.body.text,
+      media: req.file ? req.file.filename : null,
+      frame: req.body.frame,
     });
-
+    const savedPost = await post.save();
+    res.status(200).json(savedPost);
     res.json({
       message: "File uploaded successfully",
       url: fileUrl,
