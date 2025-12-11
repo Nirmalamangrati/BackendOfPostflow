@@ -293,40 +293,43 @@ app.get("/theme", async (req, res) => {
 
 app.post("/theme-upload", verifyToken, (req, res) => {
   const uploadSingle = upload.single("image");
-  const userId = req.user.id;
+
   uploadSingle(req, res, async (err) => {
-    if (err instanceof multer.MulterError) {
-      return res.status(400).json({ error: "Multer error: " + err.message });
-    } else if (err) {
-      return res
-        .status(500)
-        .json({ error: "Unknown upload error: " + err.message });
+    try {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ error: "Multer error: " + err.message });
+      } else if (err) {
+        return res
+          .status(500)
+          .json({ error: "Unknown upload error: " + err.message });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const { caption, frame } = req.body;
+      const imageUrl = `http://localhost:8000/uploads/${req.file.filename}`;
+      const userId = req.user.id; // always from token
+
+      const post = await Post.create({
+        userId,
+        imageUrl,
+        caption: caption || "",
+        frame: frame || "",
+      });
+
+      res.status(201).json({
+        message: "Post created successfully",
+        post,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
     }
-
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    const { caption, frame, image } = req.body;
-
-    const fileUrl = `http://localhost:8000/uploads/${req.file.filename}`;
-    const post = await Post.create({
-      user: req.user.id,
-      text: req.body.text,
-      media: req.file ? req.file.filename : null,
-      frame: req.body.frame,
-    });
-    const savedPost = await post.save();
-    res.status(200).json(savedPost);
-    res.json({
-      message: "File uploaded successfully",
-      url: fileUrl,
-      caption,
-      frame,
-      image,
-    });
   });
 });
+
 
 // Other Routers
 app.use("/api/users", authRoutes);

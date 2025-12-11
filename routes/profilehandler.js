@@ -5,6 +5,7 @@ import fs from "fs";
 import mongoose from "mongoose";
 import Post from "../models/PostModel.js";
 import { verifyToken } from "../middleware/verifyAuth.js";
+import User from "../models/User.js";
 const router = express.Router();
 
 // Multer setup for image upload
@@ -27,7 +28,9 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
     const userId = req.user.id;
     const { caption } = req.body;
     const imageUrl = req.file?.filename;
-
+    console.log("user", userId);
+    console.log("caption", caption);
+    console.log("imageUrl", imageUrl);
     if (!userId) {
       return res.status(400).json({ error: "Missing user from token" });
     }
@@ -41,7 +44,9 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
       caption,
       imageUrl: `http://localhost:8000/uploads/profile/${imageUrl}`,
     });
-
+    const updatedPost = await User.findByIdAndUpdate(userId, {
+      profileImage: `http://localhost:8000/uploads/profile/${imageUrl}`,
+    });
     res.status(201).json(newPost);
   } catch (error) {
     console.error("POST /profilehandler failed:", error);

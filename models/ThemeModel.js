@@ -12,6 +12,7 @@ const themeSchema = new mongoose.Schema({
   imageUrl: { type: String, required: true },
 
   frame: { type: String, default: "" },
+  frameColor: { type: String, default: "" },
   category: { type: String, default: "" },
   title: { type: String, default: "" },
   content: { type: String, default: "" },

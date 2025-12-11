@@ -21,8 +21,9 @@ const userSchema = new mongoose.Schema(
       { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     ],
     //theme
-    caption: String,
-    frame: String,
+    caption: { type: String, default: "" },
+    frame: { type: String, default: "" },
+    frameColor: { type: String, default: "" },
     mediaUrl: String,
     mediaType: String,
     likes: { type: Number, default: 0 },

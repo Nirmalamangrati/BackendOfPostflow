@@ -142,19 +142,15 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
 router.get("/list", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
-      "friends",
-      "fullname profileImage"
+      "friends"
+      // "fullname profileImage"
     );
-
+    console.log("user", user);
     const friendsWithFullName = user.friends.map((f) => ({
       _id: f._id,
       email: f.email,
       fullName: f.fullname,
-      profilePic: f.profileImage
-        ? `${req.protocol}://${req.get("host")}/uploads/profile/${
-            f.profileImage
-          }`
-        : null,
+      profilePic: f.profileImage,
     }));
 
     res.json(friendsWithFullName);
