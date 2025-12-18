@@ -218,6 +218,7 @@ app.post("/dashboard/comment/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { userId, text } = req.body;
+
     if (!text || !text.trim())
       return res.status(400).json({ error: "Comment text cannot be empty" });
 
@@ -226,8 +227,16 @@ app.post("/dashboard/comment/:id", async (req, res) => {
 
     post.comments.push({ userId, text });
     await post.save();
-    res.json(post);
+
+    // populate fullname and profilePic
+    const populatedPost = await Post.findById(id).populate(
+      "comments.userId",
+      "fullname profilePic"
+    );
+
+    res.json(populatedPost);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to add comment" });
   }
 });
@@ -329,7 +338,6 @@ app.post("/theme-upload", verifyToken, (req, res) => {
     }
   });
 });
-
 
 // Other Routers
 app.use("/api/users", authRoutes);
