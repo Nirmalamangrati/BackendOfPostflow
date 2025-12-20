@@ -14,6 +14,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { ThemeModel } from "./models/ThemeModel.js";
 import { verifyToken } from "./middleware/verifyAuth.js";
+import messageRoutes from "./routes/messages.js";
 
 const app = express();
 
@@ -214,29 +215,42 @@ app.post("/dashboard/:postId/like", verifyToken, async (req, res) => {
 });
 
 // Add comment
-app.post("/dashboard/comment/:id", async (req, res) => {
+app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, text } = req.body;
+    const { text } = req.body;
 
-    if (!text || !text.trim())
+    if (!text || !text.trim()) {
       return res.status(400).json({ error: "Comment text cannot be empty" });
+    }
 
     const post = await Post.findById(id);
     if (!post) return res.status(404).json({ error: "Post not found" });
 
-    post.comments.push({ userId, text });
-    await post.save();
+    post.comments.push({
+      user: req.user.id,
+      text,
+    });
 
-    // populate fullname and profilePic
+    await post.save();
     const populatedPost = await Post.findById(id).populate(
-      "comments.userId",
-      "fullname profilePic"
+      "comments.user",
+      "fullname profileImage"
     );
 
-    res.json(populatedPost);
+    const formattedComments = populatedPost.comments.map((c) => ({
+      _id: c._id,
+      text: c.text,
+      createdAt: c.createdAt,
+      user: {
+        _id: c.user._id,
+        fullname: c.user.fullname,
+        profilePic: c.user.profileImage,
+      },
+    }));
+
+    res.json({ comments: formattedComments });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Failed to add comment" });
   }
 });
@@ -349,6 +363,7 @@ app.use("/posts", postRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/friends", postRoutes);
 app.use("/api", friendRoutes);
+app.use("/api/messages", messageRoutes);
 
 const PORT = 8000;
 server.listen(PORT, () => {

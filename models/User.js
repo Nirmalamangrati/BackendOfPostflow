@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
+    
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     fullname: { type: String, required: true },
     dob: { type: String, required: true },
@@ -30,7 +31,8 @@ const userSchema = new mongoose.Schema(
     comments: { type: Array, default: [] },
     createdAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
+  
 );
 
 export default mongoose.model("User", userSchema);

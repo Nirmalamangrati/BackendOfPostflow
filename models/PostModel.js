@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 // Comment sub-schema
 const commentSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  text: String,
+  text: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -21,7 +21,20 @@ const postSchema = new mongoose.Schema({
   content: { type: String, default: "" },
   likes: { type: Number, default: 0 },
   likedByUsers: { type: [String], default: [] },
-  comments: [commentSchema],
+  comments: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      text: String,
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
+
   suggestions: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   profilePic: { type: String },
 });
