@@ -5,18 +5,25 @@ import { verifyToken } from "../middleware/verifyAuth.js";
 const router = express.Router();
 
 /* get chat messages */
-router.get("/:friendId", verifyToken, async (req, res) => {
-  const userId = req.user.id;
+// GET messages between logged-in user & friend
+router.get("/:friendId", async (req, res) => {
+  const userId = req.query.userId;
   const friendId = req.params.friendId;
 
-  const messages = await Message.find({
-    $or: [
-      { from: userId, to: friendId },
-      { from: friendId, to: userId },
-    ],
-  }).sort({ createdAt: 1 });
+  if (!userId) return res.status(400).json({ msg: "userId required" });
 
-  res.json(messages);
+  try {
+    const messages = await Message.find({
+      $or: [
+        { from: userId, to: friendId },
+        { from: friendId, to: userId },
+      ],
+    }).sort({ createdAt: 1 });
+
+    res.json(messages);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
 });
 
 /* send message */
