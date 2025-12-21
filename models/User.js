@@ -1,8 +1,12 @@
 import mongoose from "mongoose";
+const commentSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  text: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+});
 
 const userSchema = new mongoose.Schema(
   {
-    
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     fullname: { type: String, required: true },
     dob: { type: String, required: true },
@@ -11,7 +15,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     profileImage: { type: String, default: null },
     likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-
+    comments: [commentSchema],
     // Notification tracking
     notificationLastSeen: { type: Date, default: Date.now },
     // Friend system
@@ -31,8 +35,7 @@ const userSchema = new mongoose.Schema(
     comments: { type: Array, default: [] },
     createdAt: { type: Date, default: Date.now },
   },
-  { timestamps: true },
-  
+  { timestamps: true }
 );
 
 export default mongoose.model("User", userSchema);

@@ -21,19 +21,7 @@ const postSchema = new mongoose.Schema({
   content: { type: String, default: "" },
   likes: { type: Number, default: 0 },
   likedByUsers: { type: [String], default: [] },
-  comments: [
-    {
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-      text: String,
-      createdAt: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
+  comments: [commentSchema],
 
   suggestions: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   profilePic: { type: String },

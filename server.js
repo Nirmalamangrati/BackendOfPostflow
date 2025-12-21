@@ -233,24 +233,34 @@ app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
     });
 
     await post.save();
-    const populatedPost = await Post.findById(id).populate(
-      "comments.user",
-      "fullname profileImage"
-    );
+
+    const populatedPost = await Post.findById(id).populate({
+      path: "comments.userId",
+      select: "fullname profileImage",
+    });
+
+    console.log("populatedPost", populatedPost);
 
     const formattedComments = populatedPost.comments.map((c) => ({
       _id: c._id,
       text: c.text,
       createdAt: c.createdAt,
-      user: {
-        _id: c.user._id,
-        fullname: c.user.fullname,
-        profilePic: c.user.profileImage,
-      },
+      user: c.userId
+        ? {
+            _id: c.userId._id,
+            fullname: c.userId.fullname || "Unknown",
+            profilePic: c.userId.profileImage || "/default-profile.png",
+          }
+        : {
+            _id: null,
+            fullname: "Unknown",
+            profilePic: "/default-profile.png",
+          },
     }));
 
     res.json({ comments: formattedComments });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to add comment" });
   }
 });
