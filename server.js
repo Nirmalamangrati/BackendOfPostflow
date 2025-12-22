@@ -228,16 +228,15 @@ app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
     if (!post) return res.status(404).json({ error: "Post not found" });
 
     post.comments.push({
-      user: req.user.id,
+      userId: req.user.id,
       text,
     });
 
     await post.save();
 
-    const populatedPost = await Post.findById(id).populate({
-      path: "comments.userId",
-      select: "fullname profileImage",
-    });
+    const populatedPost = await Post.find()
+      .populate("comments.userId", "fullname profilePic")
+      .populate("userId", "fullname profilePic");
 
     console.log("populatedPost", populatedPost);
 
@@ -266,52 +265,66 @@ app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
 });
 
 // Edit comment
-app.put("/dashboard/comment/:postId/:commentId", async (req, res) => {
-  try {
-    const { postId, commentId } = req.params;
-    const { text } = req.body;
 
-    if (!text || !text.trim())
-      return res.status(400).json({ error: "Comment text cannot be empty" });
+app.put(
+  "/dashboard/comment/:postId/:commentId",
+  verifyToken,
+  async (req, res) => {
+    try {
+      const { postId, commentId } = req.params;
+      const { text } = req.body;
+      const userId = req.user.id; // from verifyToken middleware
 
-    const post = await Post.findById(postId);
-    if (!post) return res.status(404).json({ error: "Post not found" });
+      const post = await Post.findById(postId);
+      if (!post) return res.status(404).json({ msg: "Post not found" });
 
-    const comment = post.comments.id(commentId);
-    if (!comment) return res.status(404).json({ error: "Comment not found" });
+      const comment = post.comments.id(commentId);
+      if (!comment) return res.status(404).json({ msg: "Comment not found" });
+      if (comment.userId.toString() !== userId)
+        return res.status(403).json({ msg: "Not allowed" });
 
-    comment.text = text;
-    await post.save();
+      comment.text = text;
+      await post.save();
 
-    res.json(post);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to edit comment" });
+      res.json({ msg: "Comment updated", comment });
+    } catch (err) {
+      res.status(500).json({ msg: err.message });
+    }
   }
-});
+);
 
 // Delete comment
-app.delete("/dashboard/comment/:postId/:commentId", async (req, res) => {
-  try {
-    const { postId, commentId } = req.params;
+app.delete(
+  "/dashboard/comment/:postId/:commentId",
+  verifyToken,
+  async (req, res) => {
+    try {
+      const { postId, commentId } = req.params;
 
-    const post = await Post.findById(postId);
-    if (!post) return res.status(404).json({ error: "Post not found" });
+      const post = await Post.findById(postId);
+      if (!post) return res.status(404).json({ message: "Post not found" });
 
-    const commentIndex = post.comments.findIndex(
-      (c) => c._id.toString() === commentId
-    );
-    if (commentIndex === -1)
-      return res.status(404).json({ error: "Comment not found" });
+      if (!post.userId || post.userId.toString() !== req.user.id)
+        return res
+          .status(403)
+          .json({ message: "Unauthorized to delete comment" });
 
-    post.comments.splice(commentIndex, 1);
+      const commentIndex = post.comments.findIndex(
+        (c) => c._id.toString() === commentId
+      );
+      if (commentIndex === -1)
+        return res.status(404).json({ message: "Comment not found" });
 
-    await post.save();
+      post.comments.splice(commentIndex, 1);
+      await post.save();
 
-    res.json(post);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to delete comment" });
+      res.json({ message: "Comment deleted" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+    }
   }
-});
+);
 //Theme
 
 app.get("/theme", async (req, res) => {

@@ -24,7 +24,6 @@ const postSchema = new mongoose.Schema({
   comments: [commentSchema],
 
   suggestions: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  profilePic: { type: String },
 });
 
 // Avoid OverwriteModelError
