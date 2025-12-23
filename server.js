@@ -233,8 +233,8 @@ app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
     });
 
     await post.save();
-
-    const populatedPost = await Post.find()
+    res.json(post);
+    const populatedPost = await Post.findById(id)
       .populate("comments.userId", "fullname profilePic")
       .populate("userId", "fullname profilePic");
 
@@ -247,8 +247,8 @@ app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
       user: c.userId
         ? {
             _id: c.userId._id,
-            fullname: c.userId.fullname || "Unknown",
-            profilePic: c.userId.profileImage || "/default-profile.png",
+            fullname: c.userId.fullname,
+            profilePic: c.userId.profilePic || "/default-profile.png",
           }
         : {
             _id: null,
@@ -257,7 +257,7 @@ app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
           },
     }));
 
-    res.json({ comments: formattedComments });
+    res.json(formattedComments);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to add comment" });
@@ -273,7 +273,7 @@ app.put(
     try {
       const { postId, commentId } = req.params;
       const { text } = req.body;
-      const userId = req.user.id; // from verifyToken middleware
+      const userId = req.user.id;
 
       const post = await Post.findById(postId);
       if (!post) return res.status(404).json({ msg: "Post not found" });
@@ -286,7 +286,7 @@ app.put(
       comment.text = text;
       await post.save();
 
-      res.json({ msg: "Comment updated", comment });
+      res.json(post);
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
@@ -318,7 +318,7 @@ app.delete(
       post.comments.splice(commentIndex, 1);
       await post.save();
 
-      res.json({ message: "Comment deleted" });
+      res.json(post);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });
@@ -326,51 +326,37 @@ app.delete(
   }
 );
 //Theme
-
 app.get("/theme", async (req, res) => {
   try {
-    const themes = await ThemeModel.find();
-    res.json(themes);
+    const posts = await Post.find().sort({ createdAt: -1 });
+    res.json(posts);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error fetching themes" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 app.post("/theme-upload", verifyToken, (req, res) => {
-  const uploadSingle = upload.single("image");
-
-  uploadSingle(req, res, async (err) => {
+  upload.single("image")(req, res, async (err) => {
     try {
-      if (err instanceof multer.MulterError) {
-        return res.status(400).json({ error: "Multer error: " + err.message });
-      } else if (err) {
-        return res
-          .status(500)
-          .json({ error: "Unknown upload error: " + err.message });
-      }
-
+      if (err) return res.status(400).json({ error: err.message });
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const { caption, frame } = req.body;
-      const imageUrl = `http://localhost:8000/uploads/${req.file.filename}`;
-      const userId = req.user.id; // always from token
+      const { caption, frame, frameColor } = req.body;
 
       const post = await Post.create({
-        userId,
-        imageUrl,
+        userId: req.user.id,
         caption: caption || "",
         frame: frame || "",
+        frameColor: frameColor || "",
+        imageUrl: `http://localhost:8000/uploads/${req.file.filename}`,
+        likes: 0,
+        comments: [],
       });
 
-      res.status(201).json({
-        message: "Post created successfully",
-        post,
-      });
+      res.status(201).json(post);
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: error.message });
     }
   });
