@@ -12,7 +12,7 @@ import friendRoutes from "./routes/friends.js";
 import postRoutes from "./routes/posts.js";
 import http from "http";
 import { Server } from "socket.io";
-import { ThemeModel } from "./models/ThemeModel.js";
+
 import { verifyToken } from "./middleware/verifyAuth.js";
 import messageRoutes from "./routes/messages.js";
 

@@ -22,7 +22,8 @@ const postSchema = new mongoose.Schema({
   likes: { type: Number, default: 0 },
   likedByUsers: { type: [String], default: [] },
   comments: [commentSchema],
-
+  frame: { type: String, default: "frame1" },
+  frameColor: { type: String, default: "#ec4899" },
   suggestions: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
