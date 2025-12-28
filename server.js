@@ -42,7 +42,7 @@ mongoose.connect("mongodb://localhost:27017/postflow").then(() => {
   console.log("DB connected!");
 });
 
-// 1. Create HTTP Server and Socket.IO
+// Create HTTP Server and Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*" },
@@ -65,12 +65,9 @@ io.on("connection", (socket) => {
   });
 });
 
-// Endpoint to trigger a notification
 app.post("/notify", (req, res) => {
   const { userId, message } = req.body;
   const timestamp = new Date();
-
-  // Send notification to the user's room
   io.to(userId).emit("newNotification", { message, timestamp });
   res.json({ success: true });
 });
@@ -111,16 +108,24 @@ app.get("/dashboard", async (req, res) => {
     const { filter } = req.query;
 
     if (filter && typeof filter === "string" && filter.trim().length > 0) {
-      const regex = new RegExp(filter.trim(), "i"); // case-insensitive regex
+      const regex = new RegExp(filter.trim(), "i");
 
       const posts = await Post.find({
         $or: [{ caption: regex }],
-      }).sort({ createdAt: -1 });
+      })
+        .populate({ path: "comments.userId", select: "fullname profileImage" })
+        .populate({ path: "userId", select: "fullname profileImage" })
+        .sort({ createdAt: -1 });
 
       return res.status(200).json(posts);
     }
 
-    const posts = await Post.find().sort({ createdAt: -1 });
+    const posts = await Post.find()
+      .populate({ path: "comments.userId", select: "fullname profileImage" })
+      .populate({ path: "userId", select: "fullname profileImage" })
+      .sort({ createdAt: -1 });
+
+    console.log(" Dashboard LOADED with populated comments:", posts.length);
     res.json(posts);
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -229,37 +234,27 @@ app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
 
     post.comments.push({
       userId: req.user.id,
-      text,
+      text: text.trim(),
     });
 
     await post.save();
-    res.json(post);
     const populatedPost = await Post.findById(id)
-      .populate("comments.userId", "fullname profilePic")
-      .populate("userId", "fullname profilePic");
+      .populate({
+        path: "comments.userId",
+        select: "fullname profileImage",
+      })
+      .populate({
+        path: "userId",
+        select: "fullname profileImage",
+      });
 
-    console.log("populatedPost", populatedPost);
-
-    const formattedComments = populatedPost.comments.map((c) => ({
-      _id: c._id,
-      text: c.text,
-      createdAt: c.createdAt,
-      user: c.userId
-        ? {
-            _id: c.userId._id,
-            fullname: c.userId.fullname,
-            profilePic: c.userId.profilePic || "/default-profile.png",
-          }
-        : {
-            _id: null,
-            fullname: "Unknown",
-            profilePic: "/default-profile.png",
-          },
-    }));
-
-    res.json(formattedComments);
+    console.log(
+      "Populated comment user:",
+      populatedPost.comments[populatedPost.comments.length - 1]?.userId
+    );
+    res.json(populatedPost);
   } catch (error) {
-    console.error(error);
+    console.error("Comment error:", error);
     res.status(500).json({ error: "Failed to add comment" });
   }
 });
@@ -285,8 +280,12 @@ app.put(
 
       comment.text = text;
       await post.save();
+      const updatedPost = await Post.findById(postId).populate(
+        "comments.userId",
+        "fullname profileImage"
+      );
 
-      res.json(post);
+      res.json(updatedPost);
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
@@ -300,35 +299,38 @@ app.delete(
   async (req, res) => {
     try {
       const { postId, commentId } = req.params;
+      const userId = req.user.id;
 
       const post = await Post.findById(postId);
-      if (!post) return res.status(404).json({ message: "Post not found" });
+      if (!post) return res.status(404).json({ msg: "Post not found" });
 
-      if (!post.userId || post.userId.toString() !== req.user.id)
-        return res
-          .status(403)
-          .json({ message: "Unauthorized to delete comment" });
+      const comment = post.comments.id(commentId);
+      if (!comment) return res.status(404).json({ msg: "Comment not found" });
+      if (comment.userId.toString() !== userId)
+        return res.status(403).json({ msg: "Not allowed" });
 
-      const commentIndex = post.comments.findIndex(
-        (c) => c._id.toString() === commentId
-      );
-      if (commentIndex === -1)
-        return res.status(404).json({ message: "Comment not found" });
-
-      post.comments.splice(commentIndex, 1);
+      comment.deleteOne();
       await post.save();
+      const updatedPost = await Post.findById(postId).populate(
+        "comments.userId",
+        "fullname profileImage"
+      );
 
-      res.json(post);
+      res.json(updatedPost);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: "Server error" });
+      res.status(500).json({ msg: "Server error" });
     }
   }
 );
+
 //Theme
 app.get("/theme", async (req, res) => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 });
+    const posts = await Post.find()
+      .populate({ path: "comments.userId", select: "fullname profileImage" })
+      .populate({ path: "userId", select: "fullname profileImage" })
+      .sort({ createdAt: -1 });
     res.json(posts);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
