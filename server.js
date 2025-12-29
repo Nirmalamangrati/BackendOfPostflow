@@ -12,7 +12,7 @@ import friendRoutes from "./routes/friends.js";
 import postRoutes from "./routes/posts.js";
 import http from "http";
 import { Server } from "socket.io";
-
+import MessageModel from "./models/MessageModel.js";
 import { verifyToken } from "./middleware/verifyAuth.js";
 import messageRoutes from "./routes/messages.js";
 
@@ -48,16 +48,60 @@ const io = new Server(server, {
   cors: { origin: "*" },
   methods: ["GET", "POST"],
 });
-// Define  routes
+
 app.get("/", (req, res) => {
   res.send("Hello world from Express!");
 });
 
+// ✅ FIXED SOCKET.IO - Complete working messaging
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
-  socket.on("joinRoom", (userId) => {
+
+  // Join user room
+  socket.on("join", (userId) => {
     socket.join(userId);
-    console.log(`User ${userId} joined room`);
+    console.log("User joined room:", userId);
+  });
+
+  // ✅ FIXED: Proper message handling with error handling
+  socket.on("message", async ({ to, from, text }) => {
+    console.log("Socket message:", { to, from, text });
+
+    if (!to || !from || !text?.trim()) {
+      socket.emit("error", { message: "Invalid message data" });
+      return;
+    }
+
+    try {
+      const message = await MessageModel.create({
+        from: new mongoose.Types.ObjectId(from),
+        to: new mongoose.Types.ObjectId(to),
+        text: text.trim(),
+      });
+
+      // Send to receiver
+      io.to(to).emit("receiveMessage", {
+        _id: message._id,
+        from,
+        to,
+        text: message.text,
+        createdAt: message.createdAt,
+      });
+
+      // Confirm to sender
+      socket.emit("messageSent", {
+        _id: message._id,
+        from,
+        to,
+        text: message.text,
+        createdAt: message.createdAt,
+      });
+
+      console.log(`✅ Message delivered: ${from} → ${to}`);
+    } catch (error) {
+      console.error("❌ Message error:", error);
+      socket.emit("error", { message: "Failed to send message" });
+    }
   });
 
   socket.on("disconnect", () => {
@@ -260,7 +304,6 @@ app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
 });
 
 // Edit comment
-
 app.put(
   "/dashboard/comment/:postId/:commentId",
   verifyToken,
@@ -324,7 +367,7 @@ app.delete(
   }
 );
 
-//Theme
+// Theme
 app.get("/theme", async (req, res) => {
   try {
     const posts = await Post.find()
@@ -364,16 +407,11 @@ app.post("/theme-upload", verifyToken, (req, res) => {
   });
 });
 
-// Other Routers
+// ✅ FIXED ROUTES - No more conflicts!
 app.use("/api/users", authRoutes);
-// Profile
 app.use("/profilehandler", profileRouter);
-//theme
-app.use("/posts", postRoutes);
-
 app.use("/api/friends", friendRoutes);
-app.use("/api/friends", postRoutes);
-app.use("/api", friendRoutes);
+app.use("/posts", postRoutes);
 app.use("/api/messages", messageRoutes);
 
 const PORT = 8000;
