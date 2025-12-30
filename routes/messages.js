@@ -159,5 +159,20 @@ router.delete("/:messageId", verifyToken, async (req, res) => {
     res.status(500).json({ msg: error.message });
   }
 });
+// Notification for new message
+// io.to(to).emit("notification", {
+//   type: "new_message",
+//   fromUser: {
+//     id: req.user.id,
+//     fullName: req.user.fullName,
+//     profilePic: req.user.profilePic,
+//   },
+//   message: text.slice(0, 40) + "...",
+//   chatId: to,
+//   time: new Date().toLocaleTimeString([], {
+//     hour: "2-digit",
+//     minute: "2-digit",
+//   }),
+// });
 
 export default router;
