@@ -15,7 +15,7 @@ app.use("/uploads", express.static("uploads"));
 // Connect to MongoDB
 mongoose
   .connect("mongodb://localhost:27017/postflow")
-  .then(() => console.log("✅ DB connected!"))
+  .then(() => console.log("DB connected!"))
   .catch((err) => console.error("DB connection error:", err));
 
 // Use post routes

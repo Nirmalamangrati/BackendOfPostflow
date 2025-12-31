@@ -15,6 +15,14 @@ import { Server } from "socket.io";
 import MessageModel from "./models/MessageModel.js";
 import { verifyToken } from "./middleware/verifyAuth.js";
 import messageRoutes from "./routes/messages.js";
+import { v2 as cloudinary } from "cloudinary";
+
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const app = express();
 
@@ -57,7 +65,7 @@ app.get("/", (req, res) => {
   res.send("Hello world from Express!");
 });
 
-// ✅ FIXED SOCKET.IO - Complete working messaging
+// messaging
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
 
@@ -67,7 +75,6 @@ io.on("connection", (socket) => {
     console.log("User joined room:", userId);
   });
 
-  // ✅ FIXED: Proper message handling with error handling
   socket.on("message", async ({ to, from, text }) => {
     console.log("Socket message:", { to, from, text });
 
@@ -101,9 +108,9 @@ io.on("connection", (socket) => {
         createdAt: message.createdAt,
       });
 
-      console.log(`✅ Message delivered: ${from} → ${to}`);
+      console.log(`Message delivered: ${from} → ${to}`);
     } catch (error) {
-      console.error("❌ Message error:", error);
+      console.error("Message error:", error);
       socket.emit("error", { message: "Failed to send message" });
     }
   });
@@ -122,9 +129,18 @@ app.post("/notify", (req, res) => {
 
 // Upload route
 app.post("/api/upload", upload.single("media"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-  const fileUrl = `http://localhost:8000/uploads/${req.file.filename}`;
-  res.json({ url: fileUrl });
+  cloudinary.uploader.upload(
+    req.file.path,
+    { folder: "postflow" },
+    (error, result) => {
+      if (error) {
+        console.error("Cloudinary upload error:", error);
+        return res.status(500).json({ error: "Failed to upload media" });
+      }
+      res.json({ url: result.secure_url });
+    }
+  );
+  res.status(200).json({ message: "File uploaded successfully" });
 });
 
 // Create new post
@@ -411,7 +427,6 @@ app.post("/theme-upload", verifyToken, (req, res) => {
   });
 });
 
-// ✅ FIXED ROUTES - No more conflicts!
 app.use("/api/users", authRoutes);
 app.use("/profilehandler", profileRouter);
 app.use("/api/friends", friendRoutes);
