@@ -5,8 +5,13 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run build",
+    "start": "node server.js",
     "vercel-build": "npm run build",
     "dev": "nodemon server.js"
+  },
+  "engines": {
+    "node": "18.x"
   },
   "keywords": [],
   "author": "",
