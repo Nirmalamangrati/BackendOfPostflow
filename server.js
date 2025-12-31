@@ -38,9 +38,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // MongoDB connection
-mongoose.connect("mongodb://localhost:27017/postflow").then(() => {
-  console.log("DB connected!");
-});
+mongoose
+  .connect(
+    "mongodb+srv://nirmalamgrt_db_user:FNMz0JRpF9gMtHMW@cluster0.bvwjmc0.mongodb.net/?appName=Cluster0"
+  )
+  .then(() => {
+    console.log("DB connected!");
+  });
 
 // Create HTTP Server and Socket.IO
 const server = http.createServer(app);
