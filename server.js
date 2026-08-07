@@ -56,7 +56,6 @@ const io = new Server(server, {
   cors: { origin: "*" },
   methods: ["GET", "POST"],
 });
-
 app.get("/", (req, res) => {
   res.send("Hello world from Express!");
 });
