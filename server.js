@@ -41,7 +41,6 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
-
 // MongoDB connection
 mongoose
   .connect(
