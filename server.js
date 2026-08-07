@@ -134,7 +134,6 @@ app.post("/api/upload", upload.single("media"), (req, res) => {
 app.post("/dashboard", async (req, res) => {
   try {
     const { caption, mediaType, userId, imageUrl } = req.body;
-
     if ((!caption || !caption.trim()) && !imageUrl) {
       return res.status(400).json({ error: "Caption or image required" });
     }
