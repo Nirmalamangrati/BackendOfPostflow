@@ -129,7 +129,6 @@ app.post("/api/upload", upload.single("media"), (req, res) => {
   );
   res.status(200).json({ message: "File uploaded successfully" });
 });
-
 // Create new post
 app.post("/dashboard", async (req, res) => {
   try {
