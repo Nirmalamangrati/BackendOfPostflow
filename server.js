@@ -103,7 +103,6 @@ io.on("connection", (socket) => {
       socket.emit("error", { message: "Failed to send message" });
     }
   });
-
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
