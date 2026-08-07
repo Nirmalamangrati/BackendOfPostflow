@@ -29,7 +29,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads/profile", express.static("uploads/profile"));
 app.use("/uploads", express.static("uploads"));
-
 // Multer setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
