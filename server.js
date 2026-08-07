@@ -73,7 +73,6 @@ io.on("connection", (socket) => {
       socket.emit("error", { message: "Invalid message data" });
       return;
     }
-
     try {
       const message = await MessageModel.create({
         from: new mongoose.Types.ObjectId(from),
