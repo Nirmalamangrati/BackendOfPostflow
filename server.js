@@ -67,7 +67,6 @@ io.on("connection", (socket) => {
     socket.join(userId);
     console.log("User joined room:", userId);
   });
-
   socket.on("message", async ({ to, from, text }) => {
     console.log("Socket message:", { to, from, text });
 
