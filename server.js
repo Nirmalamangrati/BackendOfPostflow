@@ -23,7 +23,6 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 const app = express();
 
 app.use(cors());
@@ -39,7 +38,7 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(
       null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname),
     );
   },
 });
@@ -48,7 +47,7 @@ const upload = multer({ storage });
 // MongoDB connection
 mongoose
   .connect(
-    "mongodb+srv://nirmalamgrt_db_user:FNMz0JRpF9gMtHMW@cluster0.bvwjmc0.mongodb.net/?appName=Cluster0"
+    "mongodb+srv://nirmalamgrt_db_user:FNMz0JRpF9gMtHMW@cluster0.bvwjmc0.mongodb.net/?appName=Cluster0",
   )
   .then(() => {
     console.log("DB connected!");
@@ -138,7 +137,7 @@ app.post("/api/upload", upload.single("media"), (req, res) => {
         return res.status(500).json({ error: "Failed to upload media" });
       }
       res.json({ url: result.secure_url });
-    }
+    },
   );
   res.status(200).json({ message: "File uploaded successfully" });
 });
@@ -210,7 +209,7 @@ app.put("/dashboard/:id", async (req, res) => {
     const updatedPost = await Post.findByIdAndUpdate(
       id,
       { caption },
-      { new: true }
+      { new: true },
     );
     if (!updatedPost) return res.status(404).json({ error: "Post not found" });
 
@@ -314,7 +313,7 @@ app.post("/dashboard/comment/:id", verifyToken, async (req, res) => {
 
     console.log(
       "Populated comment user:",
-      populatedPost.comments[populatedPost.comments.length - 1]?.userId
+      populatedPost.comments[populatedPost.comments.length - 1]?.userId,
     );
     res.json(populatedPost);
   } catch (error) {
@@ -345,14 +344,14 @@ app.put(
       await post.save();
       const updatedPost = await Post.findById(postId).populate(
         "comments.userId",
-        "fullname profileImage"
+        "fullname profileImage",
       );
 
       res.json(updatedPost);
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
-  }
+  },
 );
 
 // Delete comment
@@ -376,7 +375,7 @@ app.delete(
       await post.save();
       const updatedPost = await Post.findById(postId).populate(
         "comments.userId",
-        "fullname profileImage"
+        "fullname profileImage",
       );
 
       res.json(updatedPost);
@@ -384,7 +383,7 @@ app.delete(
       console.error(err);
       res.status(500).json({ msg: "Server error" });
     }
-  }
+  },
 );
 
 // Theme
