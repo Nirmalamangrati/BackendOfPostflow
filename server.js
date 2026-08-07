@@ -62,7 +62,6 @@ app.get("/", (req, res) => {
 // messaging
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
-
   // Join user room
   socket.on("join", (userId) => {
     socket.join(userId);
