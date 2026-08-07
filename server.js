@@ -97,7 +97,6 @@ io.on("connection", (socket) => {
         text: message.text,
         createdAt: message.createdAt,
       });
-
       console.log(`Message delivered: ${from} → ${to}`);
     } catch (error) {
       console.error("Message error:", error);
