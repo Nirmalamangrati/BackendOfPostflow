@@ -69,7 +69,6 @@ io.on("connection", (socket) => {
   });
   socket.on("message", async ({ to, from, text }) => {
     console.log("Socket message:", { to, from, text });
-
     if (!to || !from || !text?.trim()) {
       socket.emit("error", { message: "Invalid message data" });
       return;
