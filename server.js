@@ -137,7 +137,6 @@ app.post("/dashboard", async (req, res) => {
     if ((!caption || !caption.trim()) && !imageUrl) {
       return res.status(400).json({ error: "Caption or image required" });
     }
-
     const post = await Post.create({
       caption,
       imageUrl,
