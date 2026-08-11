@@ -58,7 +58,7 @@ router.post("/request/:id", verifyToken, async (req, res) => {
 router.get("/get-friend-requests", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
-      "friendRequestsReceived"
+      "friendRequestsReceived",
     );
     console.log("user", user);
     if (!user) {
@@ -69,7 +69,6 @@ router.get("/get-friend-requests", verifyToken, async (req, res) => {
       name: friend.fullname,
       profile: friend.profileImage,
     }));
-
     console.log("Friend requests received:", friendRequests);
     res.json(friendRequests);
   } catch (err) {
@@ -94,7 +93,7 @@ router.post("/accept/:id", verifyToken, async (req, res) => {
     requester.friends.push(userId);
 
     user.friendRequestsReceived = user.friendRequestsReceived.filter(
-      (id) => id.toString() !== requesterId
+      (id) => id.toString() !== requesterId,
     );
     await user.save();
     await requester.save();
@@ -121,11 +120,11 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
     requester.friends.push(userId);
 
     user.friendRequestsReceived = user.friendRequestsReceived.filter(
-      (id) => id.toString() !== requesterId
+      (id) => id.toString() !== requesterId,
     );
     if (requester.friendRequestsSent) {
       requester.friendRequestsSent = requester.friendRequestsSent.filter(
-        (id) => id.toString() !== userId
+        (id) => id.toString() !== userId,
       );
     }
 
@@ -142,7 +141,7 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
 router.get("/list", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
-      "friends"
+      "friends",
       // "fullname profileImage"
     );
     console.log("user", user);
@@ -169,7 +168,7 @@ router.delete("/remove-friends/:friendId", async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $pull: { friends: friendId } },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedUser) return res.status(404).json({ error: "User not found" });
@@ -196,7 +195,7 @@ router.delete("/removes/:id", verifyToken, async (req, res) => {
 
     // Remove user from suggestions
     user.suggestions = user.suggestions.filter(
-      (id) => id.toString() !== userId
+      (id) => id.toString() !== userId,
     );
     await user.save();
 
