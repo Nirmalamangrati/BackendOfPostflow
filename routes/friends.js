@@ -94,7 +94,6 @@ router.post("/accept/:id", verifyToken, async (req, res) => {
     );
     await user.save();
     await requester.save();
-
     res.json({ msg: "Friend request accepted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
