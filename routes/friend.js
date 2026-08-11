@@ -10,7 +10,6 @@ router.post("/add", async (req, res) => {
   try {
     const user = await User.findById(userId);
     const friend = await User.findById(friendId);
-
     if (!user.friends.includes(friendId)) {
       user.friends.push(friendId);
       friend.friends.push(userId);
