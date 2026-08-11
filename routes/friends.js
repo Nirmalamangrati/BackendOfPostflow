@@ -122,7 +122,6 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
     }
     await user.save();
     await requester.save();
-
     res.json({ msg: "Friend request accepted and removed" });
   } catch (err) {
     res.status(500).json({ error: err.message });
