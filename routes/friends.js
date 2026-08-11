@@ -112,7 +112,6 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
     }
     user.friends.push(requesterId);
     requester.friends.push(userId);
-
     user.friendRequestsReceived = user.friendRequestsReceived.filter(
       (id) => id.toString() !== requesterId,
     );
