@@ -105,7 +105,6 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
   try {
     const requesterId = req.params.id;
     const userId = req.user.id;
-
     const user = await User.findById(userId);
     const requester = await User.findById(requesterId);
 
