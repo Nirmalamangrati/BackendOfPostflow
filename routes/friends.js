@@ -142,7 +142,6 @@ router.get("/list", verifyToken, async (req, res) => {
       fullName: f.fullname,
       profilePic: f.profileImage,
     }));
-
     res.json(friendsWithFullName);
   } catch (err) {
     console.error(err);
