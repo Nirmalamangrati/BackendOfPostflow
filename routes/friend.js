@@ -4,7 +4,6 @@ const router = express.Router();
 // Add friend
 router.post("/add", async (req, res) => {
   const { userId, friendId } = req.body;
-
   if (userId === friendId)
     return res.status(400).json({ msg: "Cannot add yourself" });
   try {
