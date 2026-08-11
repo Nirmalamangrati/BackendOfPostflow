@@ -120,7 +120,6 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
         (id) => id.toString() !== userId,
       );
     }
-
     await user.save();
     await requester.save();
 
