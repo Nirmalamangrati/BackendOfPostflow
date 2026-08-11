@@ -87,7 +87,6 @@ router.post("/accept/:id", verifyToken, async (req, res) => {
     if (!user.friendRequestsReceived.includes(requesterId)) {
       return res.status(400).json({ msg: "No friend request from this user" });
     }
-
     user.friends.push(requesterId);
     requester.friends.push(userId);
 
