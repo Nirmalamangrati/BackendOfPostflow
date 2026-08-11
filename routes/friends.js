@@ -107,7 +107,6 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
     const userId = req.user.id;
     const user = await User.findById(userId);
     const requester = await User.findById(requesterId);
-
     if (!user.friendRequestsReceived.includes(requesterId)) {
       return res.status(400).json({ msg: "No friend request from this user" });
     }
