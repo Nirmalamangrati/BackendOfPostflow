@@ -184,7 +184,6 @@ router.delete("/removes/:id", verifyToken, async (req, res) => {
       (id) => id.toString() !== userId,
     );
     await user.save();
-
     res.status(200).json({
       message: "User removed from suggestions",
       suggestions: user.suggestions,
