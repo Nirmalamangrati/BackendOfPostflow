@@ -171,7 +171,6 @@ router.delete("/remove-friends/:friendId", async (req, res) => {
 router.delete("/removes/:id", verifyToken, async (req, res) => {
   const { userId } = req.params;
   const currentUserId = req.userId;
-
   try {
     const user = await User.findById(currentUserId);
     if (!user)
