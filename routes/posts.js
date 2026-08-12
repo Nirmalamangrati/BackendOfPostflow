@@ -39,7 +39,6 @@ router.post("/:postId/comment", verifyToken, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ msg: "Post not found" });
-
     post.comments.push({
       userId: req.user.id,
       text: req.body.text,
