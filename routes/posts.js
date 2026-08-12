@@ -12,7 +12,6 @@ router.post("/", verifyToken, async (req, res) => {
       userId: req.user.id,
       content: req.body.content,
     });
-
     const savedPost = await newPost.save();
     res.json(savedPost);
   } catch (err) {
