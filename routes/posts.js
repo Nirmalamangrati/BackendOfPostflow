@@ -24,7 +24,6 @@ router.get("/friends", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const friendIds = user.friends;
-
     const posts = await Post.find({ userId: { $in: friendIds } })
       .populate("userId", "name")
       .populate("comments.userId", "name")
