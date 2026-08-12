@@ -44,7 +44,6 @@ router.post("/request/:id", verifyToken, async (req, res) => {
     // Add request
     friend.friendRequestsReceived.push(userId);
     user.friendRequestsSent.push(friendId);
-
     await friend.save();
     await user.save();
 
