@@ -46,7 +46,6 @@ router.post("/request/:id", verifyToken, async (req, res) => {
     user.friendRequestsSent.push(friendId);
     await friend.save();
     await user.save();
-
     return res.status(200).json({ msg: "Friend request sent" });
   } catch (err) {
     return res.status(500).json({ error: err.message });
