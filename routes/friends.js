@@ -159,7 +159,6 @@ router.delete("/remove-friends/:friendId", async (req, res) => {
       { $pull: { friends: friendId } },
       { new: true },
     );
-
     if (!updatedUser) return res.status(404).json({ error: "User not found" });
     res.status(200).json({ message: "Friend removed", user: updatedUser });
   } catch (err) {
