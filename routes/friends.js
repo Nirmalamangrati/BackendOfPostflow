@@ -40,7 +40,6 @@ router.post("/request/:id", verifyToken, async (req, res) => {
     // Check if already sent
     if (friend.friendRequestsReceived.includes(userId))
       return res.status(400).json({ msg: "Friend request already sent" });
-
     // Add request
     friend.friendRequestsReceived.push(userId);
     user.friendRequestsSent.push(friendId);
