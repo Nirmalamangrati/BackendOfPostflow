@@ -161,7 +161,6 @@ router.delete("/remove-friends/:friendId", async (req, res) => {
     );
 
     if (!updatedUser) return res.status(404).json({ error: "User not found" });
-
     res.status(200).json({ message: "Friend removed", user: updatedUser });
   } catch (err) {
     console.error("Remove friend error:", err);
