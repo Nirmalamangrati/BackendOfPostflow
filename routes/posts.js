@@ -28,7 +28,6 @@ router.get("/friends", verifyToken, async (req, res) => {
       .populate("userId", "name")
       .populate("comments.userId", "name")
       .sort({ createdAt: -1 });
-
     res.json(posts);
   } catch (err) {
     res.status(500).json({ error: err.message });
