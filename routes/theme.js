@@ -60,7 +60,6 @@ router.patch("/theme/:id", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "Unauthorized" });
     post.caption = text || post.caption;
     await post.save();
-
     res.json(post);
   } catch (err) {
     console.error(err);
