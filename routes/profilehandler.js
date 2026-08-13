@@ -20,7 +20,6 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
-
 // POST create new post
 router.post("/", verifyToken, upload.single("image"), async (req, res) => {
   try {
