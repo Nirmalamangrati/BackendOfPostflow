@@ -54,7 +54,6 @@ router.patch("/theme/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { text } = req.body;
-
     const post = await ThemeModel.findById(id);
     if (!post) return res.status(404).json({ message: "Post not found" });
     if (post.userId.toString() !== req.user.id)
