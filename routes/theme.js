@@ -100,7 +100,6 @@ router.post("/theme/:id/like", verifyToken, async (req, res) => {
     const index = post.likes.indexOf(req.user.id);
     if (index === -1) post.likes.push(req.user.id);
     else post.likes.splice(index, 1);
-
     await post.save();
     res.json(post);
   } catch (err) {
