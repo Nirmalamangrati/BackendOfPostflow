@@ -133,7 +133,6 @@ router.patch(
     try {
       const { postId, commentId } = req.params;
       const { text } = req.body;
-
       const post = await ThemeModel.findById(postId);
       if (!post) return res.status(404).json({ message: "Post not found" });
 
