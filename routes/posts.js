@@ -16,7 +16,6 @@ router.post("/", verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 // Get Posts from Friends
 router.get("/friends", verifyToken, async (req, res) => {
   try {
