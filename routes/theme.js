@@ -49,7 +49,6 @@ router.post("/theme-upload", verifyToken, (req, res) => {
     }
   });
 });
-
 // --- EDIT post ---
 router.patch("/theme/:id", verifyToken, async (req, res) => {
   try {
