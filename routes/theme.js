@@ -83,7 +83,6 @@ router.delete("/theme/:id", verifyToken, async (req, res) => {
         if (err) console.error(err);
       });
     }
-
     await post.remove();
     res.json({ message: "Post deleted successfully" });
   } catch (err) {
