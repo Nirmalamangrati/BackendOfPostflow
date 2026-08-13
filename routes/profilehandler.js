@@ -7,7 +7,6 @@ import Post from "../models/PostModel.js";
 import { verifyToken } from "../middleware/verifyAuth.js";
 import User from "../models/User.js";
 const router = express.Router();
-
 // Multer setup for image upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -208,7 +207,7 @@ router.delete("/:postId/comment/:commentId", verifyToken, async (req, res) => {
         .json({ message: "Unauthorized to delete comment" });
 
     const commentIndex = post.comments.findIndex(
-      (c) => c._id.toString() === commentId
+      (c) => c._id.toString() === commentId,
     );
     if (commentIndex === -1)
       return res.status(404).json({ message: "Comment not found" });
