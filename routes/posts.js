@@ -2,7 +2,6 @@ import express from "express";
 import Post from "../models/PostModel.js";
 import User from "../models/User.js";
 import { verifyToken } from "../middleware/verifyAuth.js";
-
 const router = express.Router();
 
 // Create a Post
