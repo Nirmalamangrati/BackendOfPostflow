@@ -44,7 +44,6 @@ router.post("/:postId/comment", verifyToken, async (req, res) => {
       text: req.body.text,
     });
     await post.save();
-
     res.json(post);
   } catch (err) {
     res.status(500).json({ error: err.message });
