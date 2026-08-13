@@ -97,7 +97,6 @@ router.post("/theme/:id/like", verifyToken, async (req, res) => {
     const { id } = req.params;
     const post = await ThemeModel.findById(id);
     if (!post) return res.status(404).json({ message: "Post not found" });
-
     const index = post.likes.indexOf(req.user.id);
     if (index === -1) post.likes.push(req.user.id);
     else post.likes.splice(index, 1);
