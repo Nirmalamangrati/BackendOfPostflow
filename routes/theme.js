@@ -141,7 +141,6 @@ router.patch(
         return res.status(404).json({ message: "Comment not found" });
       if (comment.userId.toString() !== req.user.id)
         return res.status(403).json({ message: "Unauthorized" });
-
       comment.text = text || comment.text;
       await post.save();
       res.json(post);
