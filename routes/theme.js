@@ -43,7 +43,6 @@ router.post("/theme-upload", verifyToken, (req, res) => {
         likes: 0,
         comments: [],
       });
-
       res.status(201).json(post);
     } catch (error) {
       res.status(500).json({ error: error.message });
