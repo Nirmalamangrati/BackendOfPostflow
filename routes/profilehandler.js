@@ -35,7 +35,6 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
     if (!imageUrl) {
       return res.status(400).json({ error: "No image uploaded" });
     }
-
     const newPost = await Post.create({
       userId,
       caption,

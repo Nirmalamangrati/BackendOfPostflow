@@ -32,7 +32,6 @@ router.post("/theme-upload", verifyToken, (req, res) => {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
-
       const { caption, frame, frameColor } = req.body;
 
       const post = await Post.create({
@@ -159,7 +158,7 @@ router.patch(
       console.error(err);
       res.status(500).json({ message: "Server error" });
     }
-  }
+  },
 );
 
 // --- DELETE comment ---
@@ -185,7 +184,7 @@ router.delete(
       console.error(err);
       res.status(500).json({ message: "Server error" });
     }
-  }
+  },
 );
 
 export default router;
