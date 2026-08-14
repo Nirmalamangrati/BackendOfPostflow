@@ -33,7 +33,6 @@ router.post("/theme-upload", verifyToken, (req, res) => {
         return res.status(400).json({ error: "No file uploaded" });
       }
       const { caption, frame, frameColor } = req.body;
-
       const post = await Post.create({
         userId: req.user.id,
         caption: caption || "",
