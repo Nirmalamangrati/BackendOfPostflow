@@ -148,7 +148,6 @@ router.patch(
     }
   },
 );
-
 // --- DELETE comment ---
 router.delete(
   "/theme/:postId/comments/:commentId",
