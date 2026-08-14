@@ -158,13 +158,11 @@ router.delete(
       const { postId, commentId } = req.params;
       const post = await ThemeModel.findById(postId);
       if (!post) return res.status(404).json({ message: "Post not found" });
-
       const comment = post.comments.id(commentId);
       if (!comment)
         return res.status(404).json({ message: "Comment not found" });
       if (comment.userId.toString() !== req.user.id)
         return res.status(403).json({ message: "Unauthorized" });
-
       comment.remove();
       await post.save();
       res.json(post);
