@@ -115,7 +115,6 @@ router.post("/theme/:id/comments", verifyToken, async (req, res) => {
     const { text } = req.body;
     const post = await ThemeModel.findById(id);
     if (!post) return res.status(404).json({ message: "Post not found" });
-
     post.comments.push({ userId: req.user.id, text });
     await post.save();
     res.json(post);
