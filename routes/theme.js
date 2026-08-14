@@ -124,7 +124,6 @@ router.post("/theme/:id/comments", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 // --- EDIT comment ---
 router.patch(
   "/theme/:postId/comments/:commentId",
