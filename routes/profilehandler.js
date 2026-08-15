@@ -97,7 +97,6 @@ router.post("/:postId/like", verifyToken, async (req, res) => {
       post.likes = Math.max(post.likes - 1, 0);
       post.likedByUsers.splice(likedIndex, 1);
     }
-
     await post.save();
 
     res.json({
