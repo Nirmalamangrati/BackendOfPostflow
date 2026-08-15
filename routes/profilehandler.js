@@ -87,7 +87,6 @@ router.post("/:postId/like", verifyToken, async (req, res) => {
     }
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
-
     const likedIndex = post.likedByUsers.indexOf(userId);
     if (likedIndex === -1) {
       // Not liked yet - add like
