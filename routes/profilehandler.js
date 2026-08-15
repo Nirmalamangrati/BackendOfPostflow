@@ -135,7 +135,6 @@ router.put("/:postId", verifyToken, async (req, res) => {
     const { caption } = req.body;
     if (typeof caption !== "string")
       return res.status(400).json({ message: "Caption must be a string" });
-
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
