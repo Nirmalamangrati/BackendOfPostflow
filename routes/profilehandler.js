@@ -116,7 +116,6 @@ router.post("/:postId/comment", verifyToken, async (req, res) => {
     const { text } = req.body;
     if (!text)
       return res.status(400).json({ message: "Comment text required" });
-
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
