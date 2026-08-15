@@ -82,7 +82,6 @@ router.post("/:postId/like", verifyToken, async (req, res) => {
   try {
     const { postId } = req.params;
     const userId = req.user.id;
-
     if (!mongoose.Types.ObjectId.isValid(postId)) {
       return res.status(400).json({ message: "Invalid post ID" });
     }
