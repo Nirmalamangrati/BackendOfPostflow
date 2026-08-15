@@ -118,7 +118,6 @@ router.post("/:postId/comment", verifyToken, async (req, res) => {
       return res.status(400).json({ message: "Comment text required" });
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
-
     post.comments.push({ text, createdAt: new Date() });
     await post.save();
 
