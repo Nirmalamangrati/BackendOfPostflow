@@ -133,7 +133,6 @@ router.put("/:postId", verifyToken, async (req, res) => {
     console.log("User:", req.user);
     const { postId } = req.params;
     const { caption } = req.body;
-
     if (typeof caption !== "string")
       return res.status(400).json({ message: "Caption must be a string" });
 
