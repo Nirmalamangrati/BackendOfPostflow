@@ -143,7 +143,6 @@ router.put("/:postId", verifyToken, async (req, res) => {
         .json({ message: "Unauthorized to edit this post" });
     post.caption = caption;
     await post.save();
-
     res.json({ message: "Post updated", caption: post.caption });
   } catch (err) {
     console.error("Update error:", err);
