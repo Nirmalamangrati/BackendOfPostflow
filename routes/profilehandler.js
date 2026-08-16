@@ -183,7 +183,6 @@ router.delete("/:postId/comment/:commentId", verifyToken, async (req, res) => {
       return res
         .status(403)
         .json({ message: "Unauthorized to delete comment" });
-
     const commentIndex = post.comments.findIndex(
       (c) => c._id.toString() === commentId,
     );
