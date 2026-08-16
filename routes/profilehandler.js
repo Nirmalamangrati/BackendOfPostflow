@@ -166,7 +166,6 @@ router.delete("/:postId", verifyToken, async (req, res) => {
     if (fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
     }
-
     await Post.findByIdAndDelete(postId);
     res.json({ message: "Post deleted" });
   } catch (err) {
