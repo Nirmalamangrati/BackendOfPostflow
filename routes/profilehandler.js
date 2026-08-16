@@ -188,7 +188,6 @@ router.delete("/:postId/comment/:commentId", verifyToken, async (req, res) => {
     );
     if (commentIndex === -1)
       return res.status(404).json({ message: "Comment not found" });
-
     post.comments.splice(commentIndex, 1);
     await post.save();
 
