@@ -205,7 +205,6 @@ router.put("/:postId/comment/:commentId", verifyToken, async (req, res) => {
     if (!text) return res.status(400).json({ message: "Text required" });
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
-
     if (!post.userId || post.userId.toString() !== req.user.id)
       return res.status(403).json({ message: "Unauthorized to edit comment" });
 
