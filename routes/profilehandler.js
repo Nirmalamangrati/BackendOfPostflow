@@ -179,7 +179,6 @@ router.delete("/:postId/comment/:commentId", verifyToken, async (req, res) => {
     const { postId, commentId } = req.params;
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
-
     if (!post.userId || post.userId.toString() !== req.user.id)
       return res
         .status(403)
