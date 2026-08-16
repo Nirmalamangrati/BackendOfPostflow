@@ -207,7 +207,6 @@ router.put("/:postId/comment/:commentId", verifyToken, async (req, res) => {
     if (!post) return res.status(404).json({ message: "Post not found" });
     if (!post.userId || post.userId.toString() !== req.user.id)
       return res.status(403).json({ message: "Unauthorized to edit comment" });
-
     const comment = post.comments.id(commentId);
     if (!comment) return res.status(404).json({ message: "Comment not found" });
 
