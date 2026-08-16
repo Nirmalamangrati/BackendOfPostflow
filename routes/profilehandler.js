@@ -162,7 +162,6 @@ router.delete("/:postId", verifyToken, async (req, res) => {
         .status(403)
         .json({ message: "Unauthorized to delete this post" });
     }
-
     const imagePath = path.join(process.cwd(), post.imageUrl);
     if (fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
