@@ -173,7 +173,6 @@ router.delete("/:postId", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 // DELETE comment (only owner of post)
 router.delete("/:postId/comment/:commentId", verifyToken, async (req, res) => {
   try {
