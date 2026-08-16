@@ -202,7 +202,6 @@ router.put("/:postId/comment/:commentId", verifyToken, async (req, res) => {
   try {
     const { postId, commentId } = req.params;
     const { text } = req.body;
-
     if (!text) return res.status(400).json({ message: "Text required" });
 
     const post = await Post.findById(postId);
