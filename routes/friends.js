@@ -29,7 +29,6 @@ router.post("/request/:id", verifyToken, async (req, res) => {
     const friend = await User.findById(friendId);
     const user = await User.findById(userId);
     if (!friend) return res.status(404).json({ msg: "User not found" });
-
     // Check if already friends
     if (user.friends.includes(friendId))
       return res.status(400).json({ msg: "User already a friend" });
