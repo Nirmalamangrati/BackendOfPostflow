@@ -27,7 +27,6 @@ router.post("/request/:id", verifyToken, async (req, res) => {
 
     if (friendId === userId)
       return res.status(400).json({ msg: "Can't friend yourself" });
-
     const friend = await User.findById(friendId);
     const user = await User.findById(userId);
 
