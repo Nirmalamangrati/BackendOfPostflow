@@ -1,7 +1,6 @@
 import express from "express";
 import User from "../models/User.js";
 import { verifyToken } from "../middleware/verifyAuth.js";
-
 const router = express.Router();
 // GET all users (for "People you may know")
 router.get("/all", verifyToken, async (req, res) => {
