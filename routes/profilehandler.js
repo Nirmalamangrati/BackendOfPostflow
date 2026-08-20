@@ -108,7 +108,6 @@ router.post("/:postId/like", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 // POST add comment
 router.post("/:postId/comment", verifyToken, async (req, res) => {
   try {
