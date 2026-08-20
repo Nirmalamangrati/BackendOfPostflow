@@ -88,7 +88,6 @@ router.delete("/theme/:id", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 // --- LIKE/UNLIKE post ---
 router.post("/theme/:id/like", verifyToken, async (req, res) => {
   try {
