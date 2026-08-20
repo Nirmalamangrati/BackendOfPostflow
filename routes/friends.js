@@ -17,7 +17,6 @@ router.get("/all", verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 // Send Friend Request
 router.post("/request/:id", verifyToken, async (req, res) => {
   try {
